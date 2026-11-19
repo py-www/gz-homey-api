@@ -1,0 +1,68 @@
+// Prisma schema：定義資料庫有哪些「表」、欄位、關聯
+// 改完這個檔案後執行 `npx prisma migrate dev --name 說明` 就會同步到資料庫
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 會員角色：一般會員 / 管理員
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique @db.VarChar(255)
+  password  String // 存的是 bcrypt 雜湊，不是明碼
+  name      String     @db.VarChar(50)
+  role      Role       @default(USER) // 註冊一律是 USER，不能自己改成 ADMIN
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  cartItems CartItem[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique @db.VarChar(50) // 例：蠟燭
+  slug     String    @unique @db.VarChar(50) // 例：candles（給網址用）
+  products Product[]
+}
+
+model Product {
+  id           Int        @id @default(autoincrement())
+  name         String     @db.VarChar(100)
+  nameEn       String?    @db.VarChar(100) // 預留英文版，可空
+  description  String
+  price        Int // 新台幣整數，避免小數誤差
+  stock        Int        @default(0)
+  imageUrl     String
+  affiliateUrl String? // 預留聯盟行銷連結，可空
+  isActive     Boolean    @default(true) // 下架用
+  categoryId   Int
+  category     Category   @relation(fields: [categoryId], references: [id])
+  cartItems    CartItem[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([categoryId])
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  quantity  Int
+  userId    Int
+  productId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 同一個會員，同一個商品只能有一筆（重複加入 = 數量增加）
+  @@unique([userId, productId])
+}
