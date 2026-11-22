@@ -31,9 +31,12 @@ exports.register = async (req, res) => {
   if (exists) throw httpError(409, '這個 Email 已經註冊過了');
 
   const hashed = await bcrypt.hash(password, 10); // 10 = 雜湊強度
-  const user = await prisma.user.create({
-    data: { email: email.toLowerCase(), password: hashed, name: name.trim() },
-  });
+  // 同時兩個人註冊同一個 Email 時，上面的檢查都會通過，第二個 create 會撞到 unique（P2002）
+  const user = await prisma.user
+    .create({ data: { email: email.toLowerCase(), password: hashed, name: name.trim() } })
+    .catch((err) => {
+      throw err.code === 'P2002' ? httpError(409, '這個 Email 已經註冊過了') : err;
+    });
 
   res.status(201).json({ ok: true, token: signToken(user), user: publicUser(user) });
 };

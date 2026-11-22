@@ -65,6 +65,32 @@ test('同一個 Email 登入失敗超過 10 次 → 429，換別的 Email 不受
   assert.equal(other.status, 200);
 });
 
+test('別台電腦把某個帳號連錯 10 次，本人從自己的電腦仍然登得進去', async () => {
+  const victim = `${TAG}-victim@test.local`;
+  await request(app).post('/api/auth/register').send({ email: victim, password: 'secret123', name: '本人' });
+  for (let i = 0; i < 10; i += 1) {
+    await request(app).post('/api/auth/login').set('X-Forwarded-For', '203.0.113.1').send({ email: victim, password: 'wrong' });
+  }
+  const attacker = await request(app).post('/api/auth/login').set('X-Forwarded-For', '203.0.113.1').send({ email: victim, password: 'wrong' });
+  assert.equal(attacker.status, 429);
+  const owner = await request(app).post('/api/auth/login').set('X-Forwarded-For', '203.0.113.2').send({ email: victim, password: 'secret123' });
+  assert.equal(owner.status, 200);
+});
+
+test('同時註冊同一個 Email → 一個 201、一個 409（不是 500）', async () => {
+  const body = { email: `${TAG}-race@test.local`, password: 'secret123', name: '同時' };
+  const results = await Promise.all(Array.from({ length: 8 }, () => request(app).post('/api/auth/register').send(body)));
+  const statuses = results.map((r) => r.status);
+  assert.equal(statuses.filter((s) => s === 201).length, 1, statuses.join(','));
+  assert.equal(statuses.filter((s) => s === 409).length, 7, statuses.join(','));
+});
+
+test('陌生網域的 CORS 請求不回 500，也不帶 allow-origin header', async () => {
+  const res = await request(app).get('/api/categories').set('Origin', 'https://evil.example');
+  assert.notEqual(res.status, 500);
+  assert.equal(res.headers['access-control-allow-origin'], undefined);
+});
+
 test('沒帶 token 打 /api/auth/me → 401', async () => {
   const res = await request(app).get('/api/auth/me');
   assert.equal(res.status, 401);

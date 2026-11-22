@@ -13,6 +13,7 @@ const openapiDoc = YAML.parse(fs.readFileSync(path.join(__dirname, 'docs', 'open
 
 const app = express();
 app.disable('x-powered-by'); // 不告訴外人後端用 Express
+app.set('trust proxy', 1); // Render 前面有一層 proxy：req.ip 才會是使用者真正的 IP，不是 proxy 的
 
 // CORS：允許哪些前端網址呼叫這個 API（多個用逗號分開）
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
@@ -23,8 +24,8 @@ app.use(
   cors({
     origin(origin, callback) {
       // 沒有 origin（Postman、伺服器之間呼叫）也允許
-      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error('Not allowed by CORS'));
+      // 不在名單：不帶 CORS header，瀏覽器自己會擋；不丟錯誤，免得變成 500
+      return callback(null, !origin || allowedOrigins.includes(origin));
     },
   }),
 );
