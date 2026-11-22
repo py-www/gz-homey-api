@@ -12,6 +12,7 @@ const { notFound, errorHandler } = require('./middlewares/errorHandler');
 const openapiDoc = YAML.parse(fs.readFileSync(path.join(__dirname, 'docs', 'openapi.yaml'), 'utf8'));
 
 const app = express();
+app.disable('x-powered-by'); // 不告訴外人後端用 Express
 
 // CORS：允許哪些前端網址呼叫這個 API（多個用逗號分開）
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')

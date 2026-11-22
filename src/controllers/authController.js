@@ -22,9 +22,10 @@ exports.register = async (req, res) => {
   // 只拿 email / password / name，故意不拿 role → 一般人不可能把自己變 ADMIN
   const { email, password, name } = req.body || {};
 
-  if (!email || !EMAIL_RE.test(email)) throw httpError(400, 'Email 格式不正確');
-  if (!password || password.length < 6) throw httpError(400, '密碼至少 6 個字元');
-  if (!name || name.trim().length === 0 || name.length > 50) throw httpError(400, '名稱必填，最多 50 字');
+  // 先確認是字串：JSON 可以送數字、陣列，不檢查的話 toLowerCase() 會爆 500
+  if (typeof email !== 'string' || !EMAIL_RE.test(email)) throw httpError(400, 'Email 格式不正確');
+  if (typeof password !== 'string' || password.length < 6) throw httpError(400, '密碼至少 6 個字元');
+  if (typeof name !== 'string' || name.trim().length === 0 || name.length > 50) throw httpError(400, '名稱必填，最多 50 字');
 
   const exists = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (exists) throw httpError(409, '這個 Email 已經註冊過了');
@@ -40,7 +41,9 @@ exports.register = async (req, res) => {
 // POST /api/auth/login
 exports.login = async (req, res) => {
   const { email, password } = req.body || {};
-  if (!email || !password) throw httpError(400, '請輸入 Email 和密碼');
+  if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+    throw httpError(400, '請輸入 Email 和密碼');
+  }
 
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   // 帳號不存在或密碼錯，都回同一句話 → 不讓壞人知道哪個 Email 有註冊
