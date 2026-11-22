@@ -77,6 +77,15 @@ test('別台電腦把某個帳號連錯 10 次，本人從自己的電腦仍然�
   assert.equal(owner.status, 200);
 });
 
+test('同一個 Email 從很多台電腦輪流猜，總共失敗 50 次後全部擋住', async () => {
+  const target = `${TAG}-spray@test.local`;
+  for (let i = 0; i < 50; i += 1) {
+    await request(app).post('/api/auth/login').set('X-Forwarded-For', `198.51.100.${i + 1}`).send({ email: target, password: 'wrong' });
+  }
+  const fresh = await request(app).post('/api/auth/login').set('X-Forwarded-For', '198.51.100.200').send({ email: target, password: 'wrong' });
+  assert.equal(fresh.status, 429);
+});
+
 test('同時註冊同一個 Email → 一個 201、一個 409（不是 500）', async () => {
   const body = { email: `${TAG}-race@test.local`, password: 'secret123', name: '同時' };
   const results = await Promise.all(Array.from({ length: 8 }, () => request(app).post('/api/auth/register').send(body)));

@@ -205,7 +205,7 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '429':
-          description: 同一台電腦對同一個 Email 15 分鐘內登入失敗 10 次，暫時擋住
+          description: 15 分鐘內，同一台電腦對同一個 Email 失敗 10 次，或同一個 Email 總共失敗 50 次，暫時擋住
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
