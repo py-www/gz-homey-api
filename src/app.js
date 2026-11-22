@@ -1,8 +1,15 @@
 // app.js：組裝 Express（中介軟體 + 路由 + 錯誤處理），不負責啟動
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+const YAML = require('yaml');
+const swaggerUi = require('swagger-ui-express');
 const routes = require('./routes');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
+
+// API 文件：讀手寫的 OpenAPI YAML
+const openapiDoc = YAML.parse(fs.readFileSync(path.join(__dirname, 'docs', 'openapi.yaml'), 'utf8'));
 
 const app = express();
 
@@ -22,7 +29,9 @@ app.use(
 );
 app.use(express.json());
 
-app.get('/', (req, res) => res.json({ ok: true, message: 'GZ HOMEY API，請使用 /api 開頭的路徑' }));
+app.get('/', (req, res) => res.json({ ok: true, message: 'GZ HOMEY API，文件請看 /api-docs' }));
+app.get('/api-docs.json', (req, res) => res.json(openapiDoc));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiDoc, { customSiteTitle: 'GZ HOMEY API 文件' }));
 app.use('/api', routes);
 
 app.use(notFound);
