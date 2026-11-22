@@ -13,7 +13,9 @@ const openapiDoc = YAML.parse(fs.readFileSync(path.join(__dirname, 'docs', 'open
 
 const app = express();
 app.disable('x-powered-by'); // 不告訴外人後端用 Express
-app.set('trust proxy', 1); // Render 前面有一層 proxy：req.ip 才會是使用者真正的 IP，不是 proxy 的
+// Render 前面有 3 層 proxy（11/23 線上量到 X-Forwarded-For = 使用者, Cloudflare, Render 內部），
+// 設 3 讓 req.ip 是使用者真正的 IP；設太小會拿到 Render 內部共用 IP，設太大使用者可以偽造
+app.set('trust proxy', 3);
 
 // CORS：允許哪些前端網址呼叫這個 API（多個用逗號分開）
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
