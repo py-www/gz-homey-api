@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // 平常 API 查資料用：走 pooler（櫃台）
+  directUrl = env("DIRECT_URL")   // prisma migrate 建表用：直連（後門）
 }
 
 // 會員角色：一般會員 / 管理員
