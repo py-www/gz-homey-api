@@ -32,13 +32,14 @@ cp .env.example .env       # 填入下方環境變數
 npx prisma migrate deploy  # 建立資料表
 npm run db:seed            # 建立測試帳號、分類、24 件商品
 npm run dev                # http://localhost:3000
-npm test                   # 跑整合測試
+npm test                   # 跑整合測試（只連 TEST_DATABASE_URL，不會動到線上資料）
 ```
 
 ## 環境變數
 | 名稱 | 說明 |
 |---|---|
 | `DATABASE_URL` | Neon pooled 連線字串（一般查詢用） |
+| `TEST_DATABASE_URL` | 只給 `npm test` 用：Neon test branch 的 pooled 連線字串（不能和 `DATABASE_URL` 一樣） |
 | `DIRECT_URL` | Neon direct 連線字串（migrate 用） |
 | `JWT_SECRET` | JWT 簽章密鑰（一長串亂碼） |
 | `PORT` | 伺服器 port，預設 3000 |

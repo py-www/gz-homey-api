@@ -1,5 +1,10 @@
 // 測試共用工具：建立帶 TAG 前綴的測試資料，結束後用 cleanup() 全部刪掉
 require('dotenv').config();
+// 測試會新增 / 刪除資料，只能連測試用的資料庫（Neon 的 test branch），不能碰線上那個
+if (!process.env.TEST_DATABASE_URL || process.env.TEST_DATABASE_URL === process.env.DATABASE_URL) {
+  throw new Error('請在 .env 設定 TEST_DATABASE_URL（Neon test branch 的連線字串），而且不能和 DATABASE_URL 一樣');
+}
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL; // 一定要在 require prisma 之前
 const jwt = require('jsonwebtoken');
 const request = require('supertest');
 const app = require('../src/app');
