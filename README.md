@@ -4,7 +4,7 @@ GZ HOMEY 氛圍居家選物電商 — 後端 API（六角學院 前後端整合�
 
 - 線上 API：`https://gz-homey-api.onrender.com/api`
 - API 文件（Swagger）：`https://gz-homey-api.onrender.com/api-docs`
-- 前端網站：`https://<vercel-project>.vercel.app`（前端 Repo：`gz-homey-web`）
+- 前端網站：https://gz-homey-web.vercel.app（前端 Repo：`gz-homey-web`）
 
 > Render 免費方案閒置會休眠，第一次開啟可能要等 30–60 秒。
 
