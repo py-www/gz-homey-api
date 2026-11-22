@@ -1,4 +1,4 @@
-// Middleware（門口檢查站）：驗證 JWT token、檢查是不是管理員
+// Middleware（在 controller 之前執行的檢查）：驗證 JWT token、檢查是不是管理員
 const jwt = require('jsonwebtoken');
 const httpError = require('../utils/httpError');
 

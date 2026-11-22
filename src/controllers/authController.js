@@ -1,4 +1,4 @@
-// Controller（廚師）：會員註冊、登入、查看自己
+// Controller（處理商業邏輯、存取資料庫）：會員註冊、登入、查看自己
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/prisma');
